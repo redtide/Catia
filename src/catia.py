@@ -23,6 +23,7 @@ import ui_catia
 from shared_canvasjack import *
 from shared_settings import *
 
+from PyQt5.QtCore import QTranslator, QLocale, QLibraryInfo
 from PyQt5.QtWidgets import QInputDialog, QLineEdit
 
 # ------------------------------------------------------------------------------------------------------------
@@ -1002,6 +1003,24 @@ if __name__ == '__main__':
                              app.translate("CatiaMainW",
                                            "JACK is not available in this system, cannot use this application."))
         sys.exit(1)
+
+    # Set up translations
+    currentLocale = QLocale()
+    appTranslator = QTranslator()
+    sysTranslator = None
+    pathTranslations = os.path.abspath(os.path.join(os.path.dirname(__file__), "translations"))
+    if appTranslator.load(currentLocale, "catia", "_", pathTranslations):
+        sysTranslator = QTranslator()
+        pathSysTranslations = pathTranslations
+        if not sysTranslator.load(currentLocale, "qt", "_", pathSysTranslations):
+            pathSysTranslations = QLibraryInfo.location(QLibraryInfo.TranslationsPath)
+            sysTranslator.load(currentLocale, "qt", "_", pathSysTranslations)
+    else:
+        appTranslator = None
+
+    if appTranslator is not None:
+        app.installTranslator(appTranslator)
+        app.installTranslator(sysTranslator)
 
     # Init GUI
     gui = CatiaMainW()
